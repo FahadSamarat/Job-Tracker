@@ -25,11 +25,149 @@ import {
   Tag,
   message,
   Spin,
+  Alert,
 } from "antd";
-import { PlusOutlined, EditOutlined, DeleteOutlined } from "@ant-design/icons";
+import {
+  PlusOutlined,
+  EditOutlined,
+  DeleteOutlined,
+  BulbOutlined,
+} from "@ant-design/icons";
+import axios from "axios";
+import ReactMarkdown from "react-markdown";
 
-const { Title } = Typography;
+const { Title, Text } = Typography;
 const { Option } = Select;
+const API_BASE_URL = "http://localhost:5000/api";
+
+// Dashboard Insights Component
+function DashboardInsights({ applications }) {
+  const [insights, setInsights] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
+
+  useEffect(() => {
+    const fetchInsights = async () => {
+      if (applications.length === 0) {
+        setInsights("");
+        return;
+      }
+
+      setLoading(true);
+      setError("");
+      const stats = {
+        applied: applications.filter((app) => app.status === "applied").length,
+        interview: applications.filter((app) => app.status === "interview")
+          .length,
+        rejected: applications.filter((app) => app.status === "rejected")
+          .length,
+        hired: applications.filter((app) => app.status === "hired").length,
+      };
+
+      const jobTitles = [...new Set(applications.map((app) => app.position))];
+
+      try {
+        const response = await axios.post(`${API_BASE_URL}/career-insights`, {
+          stats,
+          jobTitles,
+        });
+
+        setInsights(response.data.insights);
+      } catch (err) {
+        console.error("Error fetching insights:", err);
+        setError(
+          err.response?.data?.error ||
+            "Failed to load insights. Please try again later."
+        );
+        setInsights("");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchInsights();
+  }, [applications]);
+
+  // Custom components for ReactMarkdown
+  const markdownComponents = {
+    h1: ({ node, ...props }) => <Title level={4} {...props} />,
+    h2: ({ node, ...props }) => <Title level={5} {...props} />,
+    h3: ({ node, ...props }) => (
+      <Text strong {...props} style={{ display: "block", marginTop: 8 }} />
+    ),
+    p: ({ node, ...props }) => (
+      <Text
+        {...props}
+        style={{ display: "block", marginBottom: 8, lineHeight: 1.6 }}
+      />
+    ),
+    ul: ({ node, ...props }) => (
+      <ul {...props} style={{ paddingLeft: 20, margin: "8px 0" }} />
+    ),
+    ol: ({ node, ...props }) => (
+      <ol {...props} style={{ paddingLeft: 20, margin: "8px 0" }} />
+    ),
+    li: ({ node, ...props }) => (
+      <li {...props} style={{ marginBottom: 4, lineHeight: 1.6 }} />
+    ),
+    strong: ({ node, ...props }) => (
+      <strong {...props} style={{ fontWeight: 600 }} />
+    ),
+  };
+
+  if (applications.length === 0) {
+    return (
+      <Card style={{ marginBottom: 24 }}>
+        <Title level={3}>
+          <BulbOutlined /> AI Career Insights
+        </Title>
+        <Text>Start adding job applications to get personalized insights!</Text>
+      </Card>
+    );
+  }
+
+  return (
+    <Card style={{ marginBottom: 24 }}>
+      <Title level={3}>
+        <BulbOutlined /> AI Career Insights
+      </Title>
+
+      {loading && (
+        <div style={{ textAlign: "center", padding: "16px 0" }}>
+          <Spin />
+          <Text style={{ display: "block", marginTop: 8 }}>
+            Analyzing your job search progress...
+          </Text>
+        </div>
+      )}
+
+      {error && (
+        <Alert
+          message="Error"
+          description={error}
+          type="error"
+          style={{ marginBottom: 16 }}
+          closable
+          onClose={() => setError("")}
+        />
+      )}
+
+      {insights && !loading && (
+        <div style={{ lineHeight: 1.6 }}>
+          <ReactMarkdown components={markdownComponents}>
+            {insights}
+          </ReactMarkdown>
+        </div>
+      )}
+
+      {!insights && !loading && !error && applications.length > 0 && (
+        <Text>
+          No insights available at the moment. Please try again later.
+        </Text>
+      )}
+    </Card>
+  );
+}
 
 export default function Dashboard() {
   const [isModalVisible, setIsModalVisible] = useState(false);
@@ -61,7 +199,7 @@ export default function Dashboard() {
       setLoading(true);
       setError("");
       let q;
-      
+
       if (statusFilter === "all") {
         q = query(
           collection(db, "jobApplications"),
@@ -107,8 +245,8 @@ export default function Dashboard() {
         userId,
         createdAt: new Date(),
       };
-      
-      setApplications(prev => [...prev, newApplication]);
+
+      setApplications((prev) => [...prev, newApplication]);
       message.success("Application created successfully!");
       form.resetFields();
       setIsModalVisible(false);
@@ -129,11 +267,11 @@ export default function Dashboard() {
       );
 
       // Update local state
-      setApplications(prev => prev.map(app => 
-        app.id === editingApplication.id 
-          ? { ...app, ...values }
-          : app
-      ));
+      setApplications((prev) =>
+        prev.map((app) =>
+          app.id === editingApplication.id ? { ...app, ...values } : app
+        )
+      );
 
       message.success("Application updated successfully!");
       setEditingApplication(null);
@@ -152,7 +290,7 @@ export default function Dashboard() {
       await deleteDoc(doc(db, "jobApplications", id));
 
       // Remove from local state
-      setApplications(prev => prev.filter(app => app.id !== id));
+      setApplications((prev) => prev.filter((app) => app.id !== id));
 
       message.success("Application deleted successfully!");
     } catch (error) {
@@ -263,6 +401,8 @@ export default function Dashboard() {
 
   return (
     <div style={{ padding: "24px" }}>
+      <DashboardInsights applications={applications} />
+
       <Card>
         <div
           style={{
@@ -292,11 +432,7 @@ export default function Dashboard() {
           </Select>
         </div>
 
-        {error && (
-          <div style={{ marginBottom: 16, color: "red" }}>
-            {error}
-          </div>
-        )}
+        {error && <div style={{ marginBottom: 16, color: "red" }}>{error}</div>}
 
         <Table
           dataSource={filteredApplications}
@@ -304,7 +440,7 @@ export default function Dashboard() {
           loading={loading}
           rowKey="id"
           locale={{
-            emptyText: "No job applications found. Add your first application!"
+            emptyText: "No job applications found. Add your first application!",
           }}
         />
       </Card>
@@ -365,9 +501,7 @@ export default function Dashboard() {
             >
               {editingApplication ? "Update" : "Create"}
             </Button>
-            <Button onClick={handleCancel}>
-              Cancel
-            </Button>
+            <Button onClick={handleCancel}>Cancel</Button>
           </Form.Item>
         </Form>
       </Modal>

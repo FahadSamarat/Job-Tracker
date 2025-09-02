@@ -63,6 +63,16 @@ export default function Navbar() {
       icon: <UserOutlined />,
       label: "Profile",
     },
+    {
+      key: "/job-analyzer",
+      icon: <UserOutlined />,
+      label: "Job Analyzer",
+    },
+    {
+      key: "/chatbot",
+      icon: <UserOutlined />,
+      label: "Chatbot",
+    },
   ];
 
   const userMenuItems = [
