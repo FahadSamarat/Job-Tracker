@@ -3,25 +3,27 @@
 ## Technology Stack
 
 - Frontend: React.js with Ant Design components
-
+- Backend: Node.js/Express server with Gemini AI API
 - Authentication: Firebase Auth
-
 - Database: Firebase Firestore
-
-- State Management: Redux with Redux Persist
-
-- Routing: React Router
-
-- Build Tool: Create React App
+- AI Integration: Google Gemini API with Axios
+- Additional: React Markdown for AI response rendering
 
 ## User Flow
 
-- Register/Login → 2. View Dashboard → 3. Add/Manage Applications → 4. View Profile → 5. Logout
+- Register/Login → Dashboard with AI Insights → Add/Manage Applications → AI Tools (Resume Helper, Job Analyzer, Career Chatbot) → View Profile → Logout
 
-## How many hours did it take you to complete this assignment?
+## AI Features
 
-It took me two days to complete the project
+- Resume feedback analysis
+- Job description analyzer
+- Career insights dashboard
+- AI career assistant chatbot
 
-## Were there any parts of the lab you found challenging?
+## Development Time
 
-Yes, there were a few parts of the lab that I found challenging. Even though I was able to finish the lab in two days, some sections required extra time and focus.
+Completed in 2 days with additional AI integration
+
+## Challenges
+
+Firebase setup, AI API integration, and Markdown rendering required extra focus

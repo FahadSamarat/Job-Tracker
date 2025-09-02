@@ -15,6 +15,10 @@ import AdminProtectedRoute from "./components/AdminProtectedRoute";
 import { Layout, Spin } from "antd";
 import Navbar from "./components/Navbar";
 
+import ResumeHelper from "./components/ResumeHelper";
+import JobAnalyzer from "./components/JobAnalyzer";
+import CareerChatbot from "./components/Chatbot";
+
 const { Content } = Layout;
 
 function AppLayout({ children }) {
@@ -48,6 +52,38 @@ function App() {
             <Routes>
               <Route path="/register" element={<Register />} />
               <Route path="/login" element={<Login />} />
+
+              <Route
+                path="/resume-helper"
+                element={
+                  <ProtectedRoute>
+                    <AppLayout>
+                      <ResumeHelper />
+                    </AppLayout>
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/job-analyzer"
+                element={
+                  <ProtectedRoute>
+                    <AppLayout>
+                      <JobAnalyzer />
+                    </AppLayout>
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/chatbot"
+                element={
+                  <ProtectedRoute>
+                    <AppLayout>
+                      <CareerChatbot />
+                    </AppLayout>
+                  </ProtectedRoute>
+                }
+              />
+
               <Route
                 path="/"
                 element={
